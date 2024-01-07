@@ -26,6 +26,18 @@ pub async fn get_fields() -> Value {
     value.clone()
 }
 
+pub async fn get_work_item_types() -> Value {
+
+    let path = format!("{}/{}", "./../data", "meta_data");
+    let file_path = format!("{}/{}", &path, "work_item_types.json");
+
+    let mut file = File::open(file_path).await.unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).await.unwrap();
+    let value: Value = serde_json::from_str(&contents).unwrap();
+    value.clone()
+}
+
 pub async fn get_classification() -> Value {
 
     let path = format!("{}/{}", "./../data", "meta_data");

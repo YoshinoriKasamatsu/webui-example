@@ -51,6 +51,15 @@ async fn get_fields() -> HttpResponse {
         .body(json_text)
 }
 
+async fn get_work_item_types() -> HttpResponse {
+
+    let values = repositories::get_work_item_types().await;
+    let json_text = serde_json::to_string(&values).unwrap();
+    HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .body(json_text)
+}
+
 async fn get_classification() -> HttpResponse {
 
     let values = repositories::get_classification().await;
@@ -112,6 +121,7 @@ async fn main() -> std::io::Result<()> {
             .route("api/workitems", web::get().to(get_work_items))
             .route("api/categories", web::get().to(get_categories))
             .route("api/fields", web::get().to(get_fields))
+            .route("api/workitemtypes", web::get().to(get_work_item_types))
             .route("api/classification", web::get().to(get_classification))
             .route("api/states", web::get().to(get_states))
             .route("api/data-operation/load-data", web::post().to(post_operation_load_data))
