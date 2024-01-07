@@ -24,6 +24,15 @@ pub struct AppConfig {
 
 }
 
+async fn get_work_items() -> HttpResponse {
+
+    let response = repositories::get_work_items().await;
+    let json_text = serde_json::to_string(&response).unwrap();
+    HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .body(json_text)
+}
+
 async fn get_categories() -> HttpResponse {
 
     let categories = repositories::get_categories().await;
@@ -102,6 +111,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             // .service(Files::new("/images", "static/images/").show_files_listing())
+            .route("api/workitems", web::get().to(get_work_items))
             .route("api/categories", web::get().to(get_categories))
             .route("api/fields", web::get().to(get_fields))
             .route("api/classification", web::get().to(get_classification))
