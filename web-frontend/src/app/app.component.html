@@ -1,8 +1,4 @@
 <mat-toolbar color="primary" class="header">Azure DevOps Tool
-
-  <button mat-flat-button (click)="onClickLoadData()">データ更新</button>
-  <button mat-flat-button >設定</button>
-
 </mat-toolbar>
 <mat-sidenav-container class="container">
   <mat-sidenav #sidenav mode="side" opened class="sidenav">
@@ -23,4 +19,7 @@
   </mat-sidenav-content>
 </mat-sidenav-container>
 
-<mat-toolbar color="primary" class="footer">Footer</mat-toolbar>
+<mat-toolbar color="primary" class="footer">
+  <button mat-flat-button (click)="onClickLoadData()">データ更新</button>
+  <button mat-flat-button >設定</button>
+</mat-toolbar>

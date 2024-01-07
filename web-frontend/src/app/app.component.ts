@@ -42,7 +42,9 @@ export class AppComponent {
   constructor(private readonly dataOperationService: DataOperationService, private _formBuilder: FormBuilder) {}
 
   onClickLoadData() {
-    this.dataOperationService.postExecuteDataUpdate().subscribe();
+    this.dataOperationService.postExecuteDataUpdate().subscribe(() => {
+      console.log("更新完了")
+    });
   }
 
 }
