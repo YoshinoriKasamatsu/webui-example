@@ -7,6 +7,19 @@
       <mat-panel-description>
       </mat-panel-description>
     </mat-expansion-panel-header>
+    <mat-form-field>
+      <mat-label>WorkItemTypes</mat-label>
+      <mat-select [formControl]="workItemTypesFormControl" multiple>
+        @for (workItemTypesValue of workItemTypesValues; track workItemTypesValue) {
+          <mat-option [value]="workItemTypesValue.referenceName">{{workItemTypesValue.name}}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-selection-list #shoes>
+      @for (selectedField of selectedFields; track selectedField) {
+        <mat-list-option>{{selectedField.name}}</mat-list-option>
+      }
+    </mat-selection-list>
   </mat-expansion-panel>
   <mat-expansion-panel hideToggle>
     <mat-expansion-panel-header>

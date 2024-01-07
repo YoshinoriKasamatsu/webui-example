@@ -14,9 +14,14 @@ import {
 } from '@angular/cdk/drag-drop';
 import {MatListModule} from "@angular/material/list";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatSelectModule} from "@angular/material/select";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
+import {WorkItemTypes, WorkItemTypesValue} from "../../common/model/workitemtypes";
 
 
 export interface FieldViewModel {
+  isSelected: boolean;
   name: string;
   referenceName: string;
   description: string;
@@ -35,7 +40,10 @@ export interface FieldViewModel {
     CdkDrag,
     CdkDropListGroup,
     MatListModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatCheckboxModule,
+    MatSelectModule,
+    ReactiveFormsModule
   ],
   templateUrl: './work-items.component.html',
   styleUrl: './work-items.component.scss'
@@ -53,13 +61,14 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
 
   public fields: FieldValue[] = [];
 
+  public workItemTypesFormControl = new FormControl('');
+  toppings = new FormControl('');
   public selectedFields: FieldViewModel[] = [];
 
-  public unselectedFields: FieldViewModel[] = [];
-
-  dataSource = new MatTableDataSource<WorkItem>(this.values);
+  public dataSource = new MatTableDataSource<WorkItem>(this.values);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  public  workItemTypesValues: WorkItemTypesValue[] = [];
 
   constructor(private readonly dataStoreService: DataStoreService, private readonly metaDataService: MetaDataService) {
 
@@ -79,11 +88,17 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     console.log("ngOnInit");
+    this.metaDataService.getMetaDataWorkItemTypes().subscribe((workItemTypes: WorkItemTypes) => {
+      this.workItemTypesValues = workItemTypes.value;
+    })
+
+
     this.metaDataService.getMetaDataFields().subscribe((field: Field) => {
       this.fields = field.value;
 
       for(let f of this.fields){
-        this.unselectedFields.push({
+        this.selectedFields.push({
+          isSelected: false,
           name: f.name,
           referenceName: f.referenceName,
           description: f.description
@@ -95,8 +110,6 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
       this.values = workItems;
       this.dataSource = new MatTableDataSource<WorkItem>(this.values);
       this.dataSource.paginator = this.paginator;
-      // this.dataSource.data = this.values;
-      console.log(this.values);
       this.isLoading = false;
     });
   }

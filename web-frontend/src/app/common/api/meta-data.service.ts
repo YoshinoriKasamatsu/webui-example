@@ -6,6 +6,7 @@ import {Category} from "../model/category";
 import {Field} from "../model/field";
 import {Classification} from "../model/classification";
 import { State } from "../model/state";
+import {WorkItemTypes} from "../model/workitemtypes";
 
 
 
@@ -32,6 +33,17 @@ export class MetaDataService {
     return this.httpClient.get<Field>(baseUrl + 'api/fields').pipe(
       map((field) => {
         return field;
+      }));
+  }
+
+  getMetaDataWorkItemTypes(): Observable<WorkItemTypes> {
+    console.log('getMetaDataWorkItemTypes');
+    // WebAPIの呼び出し
+    return this.httpClient.get<WorkItemTypes>(baseUrl + 'api/workitemtypes').pipe(
+      map((value) => {
+        console.log('getMetaDataWorkItemTypes');
+        console.log(value);
+        return value;
       }));
   }
 
