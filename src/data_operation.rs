@@ -14,7 +14,8 @@ pub async fn load_data(root_path: &String, config: &Config ) {
         data_loader::wit::load_fields(&root_path, &config),
         data_loader::wit::load_categories(&root_path, &config),
         data_loader::wit::load_work_item_states(&root_path ,&config),
-        data_loader::wit::load_classification_nodes(&root_path ,&config)
+        data_loader::wit::load_classification_nodes(&root_path ,&config),
+        data_loader::wit::load_work_item_types(&root_path ,&config)
     );
 
     let mut ids: Vec<u32>;
