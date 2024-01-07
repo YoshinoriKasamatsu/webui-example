@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {RouterLink, RouterOutlet} from '@angular/router';
 import {FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -8,6 +8,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatInputModule} from '@angular/material/input';
+import {DataOperationService} from "./common/api/data-operation.service";
 
 @Component({
   selector: 'app-root',
@@ -36,7 +37,12 @@ export class AppComponent {
     top: 0,
   });
 
-  constructor(private _formBuilder: FormBuilder) {}
 
+
+  constructor(private readonly dataOperationService: DataOperationService, private _formBuilder: FormBuilder) {}
+
+  onClickLoadData() {
+    this.dataOperationService.postExecuteDataUpdate().subscribe();
+  }
 
 }
