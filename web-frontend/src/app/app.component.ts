@@ -9,6 +9,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatInputModule} from '@angular/material/input';
 import {DataOperationService} from "./common/api/data-operation.service";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 @Component({
   selector: 'app-root',
@@ -25,6 +26,7 @@ import {DataOperationService} from "./common/api/data-operation.service";
     MatButtonModule,
     MatInputModule,
     RouterLink,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -37,12 +39,14 @@ export class AppComponent {
     top: 0,
   });
 
-
+  public isLoading: boolean = false;
 
   constructor(private readonly dataOperationService: DataOperationService, private _formBuilder: FormBuilder) {}
 
   onClickLoadData() {
+    this.isLoading = true;
     this.dataOperationService.postExecuteDataUpdate().subscribe(() => {
+      this.isLoading = false;
       console.log("更新完了")
     });
   }

@@ -52,3 +52,8 @@
                  aria-label="Select page of periodic elements">
   </mat-paginator>
 </div>
+@if(isLoading){
+  <div class="overlay">
+    <mat-spinner mode="indeterminate"></mat-spinner>
+  </div>
+}

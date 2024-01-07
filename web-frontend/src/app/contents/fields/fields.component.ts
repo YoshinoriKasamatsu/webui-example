@@ -4,17 +4,21 @@ import {MetaDataService} from "../../common/api/meta-data.service";
 import {Field, FieldValue} from "../../common/model/field";
 import {MatTableModule} from "@angular/material/table";
 import {ClassificationChild} from "../../common/model/classification";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 @Component({
   selector: 'app-fields',
   standalone: true,
-  imports: [
-    MatTableModule
-  ],
+    imports: [
+        MatTableModule,
+        MatProgressSpinnerModule
+    ],
   templateUrl: './fields.component.html',
   styleUrl: './fields.component.scss'
 })
 export class FieldsComponent {
+  public isLoading: boolean = true;
+
   public displayedColumns: string[] = [
 
     "name",
@@ -43,6 +47,7 @@ export class FieldsComponent {
     console.log("ngOnInit");
     this.metaDataService.getMetaDataFields().subscribe((field: Field) => {
       this.values = field.value;
+      this.isLoading = false;
     });
   }
 

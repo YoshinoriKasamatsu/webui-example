@@ -4,18 +4,22 @@ import {Classification, ClassificationValue} from "../../common/model/classifica
 import {MatTableModule} from "@angular/material/table";
 import {map} from 'rxjs';
 import {SupportedOperation} from "../../common/model/field";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 
 @Component({
   selector: 'app-classification',
   standalone: true,
   imports: [
-    MatTableModule
+    MatTableModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './classification.component.html',
   styleUrl: './classification.component.scss'
 })
 export class ClassificationComponent {
+  public isLoading: boolean = true;
+
   public displayedColumns: string[] = [
     "id",
     "identifier",
@@ -35,6 +39,7 @@ export class ClassificationComponent {
     this.metaDataService.getMetaDataClassification().subscribe((classification: Classification) => {
       this.values = classification.value;
       console.log(this.values);
+      this.isLoading = false;
     });
   }
 

@@ -7,15 +7,13 @@ import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {MetaDataService} from "../../common/api/meta-data.service";
-import {Field, FieldValue, SupportedOperation} from "../../common/model/field";
+import {Field, FieldValue} from "../../common/model/field";
 import {
-  CdkDragDrop,
-  moveItemInArray,
-  transferArrayItem,
   CdkDrag,
   CdkDropList, CdkDropListGroup,
 } from '@angular/cdk/drag-drop';
 import {MatListModule} from "@angular/material/list";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 
 export interface FieldViewModel {
@@ -36,12 +34,16 @@ export interface FieldViewModel {
     CdkDropList,
     CdkDrag,
     CdkDropListGroup,
-    MatListModule
+    MatListModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './work-items.component.html',
   styleUrl: './work-items.component.scss'
 })
 export class WorkItemsComponent implements AfterViewInit, OnInit {
+
+  public isLoading: boolean = true;
+
   public displayedColumns: string[] = [
     "id",
     "rev",
@@ -58,7 +60,6 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
   dataSource = new MatTableDataSource<WorkItem>(this.values);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  toggleAllRows = signal<null | null>(null);
 
   constructor(private readonly dataStoreService: DataStoreService, private readonly metaDataService: MetaDataService) {
 
@@ -96,6 +97,7 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
       this.dataSource.paginator = this.paginator;
       // this.dataSource.data = this.values;
       console.log(this.values);
+      this.isLoading = false;
     });
   }
 
