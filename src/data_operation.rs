@@ -10,14 +10,24 @@ pub async fn load_data(root_path: &String, config: &Config ) {
     let start = Instant::now();
     println!("load start");
 
+    // メタデータ取得
     tokio::join!(
         data_loader::wit::load_fields(&root_path, &config),
         data_loader::wit::load_categories(&root_path, &config),
         data_loader::wit::load_work_item_states(&root_path ,&config),
         data_loader::wit::load_classification_nodes(&root_path ,&config),
-        data_loader::wit::load_work_item_types(&root_path ,&config)
+        data_loader::wit::load_work_item_types(&root_path ,&config),
+        data_loader::projects::load_projects(&root_path ,&config)
     );
 
+    if let Some(project_id) = extract_data::projects::get_project_id(&root_path, &config.project).await{
+        data_loader::projects::load_project(&root_path ,&config, &project_id).await;
+        if let Some(process_id) = extract_data::projects::get_process_id(&root_path).await {
+            data_loader::processes::load_processes(&root_path,&config, &process_id).await;
+        }
+    }
+
+    // WorkItems
     let mut ids: Vec<u32>;
     if let Some(start_date_str) = extract_data::wit::get_work_items_latest_update(&root_path).await {
         // 既存データがある場合
@@ -40,6 +50,9 @@ pub async fn load_data(root_path: &String, config: &Config ) {
     if ids.len() > 0 {
         data_loader::wit::load_work_items(&root_path ,&config, &ids).await;
     }
+
+    // Pull Requests取得
+    data_loader::git::load_pull_requests(&root_path, &config).await;
 
     let end = Instant::now();
     println!("load complete: {:?}", end.duration_since(start));
