@@ -12,14 +12,13 @@ import {
   CdkDrag,
   CdkDropList, CdkDropListGroup,
 } from '@angular/cdk/drag-drop';
-import {MatListModule} from "@angular/material/list";
+import {MatListModule, MatSelectionList} from "@angular/material/list";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSelectModule} from "@angular/material/select";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
-import {WorkItemTypes, WorkItemTypesValue} from "../../common/model/workitemtypes";
 import {MatOptionSelectionChange} from "@angular/material/core";
-import {Process, ProcessValue} from "../../common/model/process";
+import {Process} from "../../common/model/process";
 
 
 export interface FieldViewModel {
@@ -82,7 +81,7 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
 
   // Raw MetaData
   public fields: FieldValue[] = [];
-  
+
   public selectedFields: FieldViewModel[] = [];
 
   public processInfos: ProcessInfo[] = [];
@@ -96,6 +95,9 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
   public dataSource = new MatTableDataSource<DynamicObject>(this.values);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  @ViewChild('selectedFileds')
+  public selectedFileds: MatSelectionList | undefined;
 
 
   private selectedProcessInfos: Map<string, ProcessInfo> = new Map<string, ProcessInfo>()
@@ -111,7 +113,7 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
   }
 
   ngAfterViewInit() {
-    
+
   }
 
 
@@ -127,7 +129,7 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
         for(let systemControl of process.layout.systemControls){
           let referenceId = systemControl.id;
           let label = systemControl.label;
-          if(referenceId === undefined || label === undefined || referenceId.length === 0 || label.length === 0){
+          if(referenceId === undefined || label === undefined || referenceId.length === 0){
             continue;
           }
           processInfo.fields.push({
@@ -135,6 +137,9 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
             LabelText: label
           })
         }
+
+
+
         // レイアウトのフィールド
         for(let page of process.layout.pages){
           for(let section of page.sections){
@@ -202,6 +207,7 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
 
     for(let processInfo of this.processInfos){
       if (processInfo.name === $event.source.value){
+        console.log(processInfo);
         if ($event.source.selected){
           this.selectedProcessInfos.set(processInfo.name, processInfo);
         }else{
@@ -220,12 +226,13 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
 
     // 選択されたチケットの種類のフィールド
     for(let [key, value] of this.selectedProcessInfos){
+      console.log("value: {}", value);
       for(let processField of value.fields){
         let findFields = this.displayColumns.filter((x) => x.id === processField.ReferenceId);
         if(findFields.length > 0){
           continue;
         }
-        if (processField.ReferenceId === undefined || processField.LabelText === undefined || processField.ReferenceId.length === 0 || processField.LabelText.length === 0){
+        if (processField.ReferenceId === undefined || processField.ReferenceId.length === 0){
           continue;
         }
         this.displayColumns.push({
@@ -236,5 +243,20 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
         this.displayedColumns.push(processField.ReferenceId)
       }
     }
+  }
+
+  onClickSelectedField($event: boolean) {
+
+    this.displayedColumns = ["id", "rev"];
+    for(let displayColumn of this.displayColumns){
+      if(displayColumn.isVisible){
+        if(this.displayedColumns.filter((x) => x === displayColumn.id).length > 0){
+          continue;
+        }
+        this.displayedColumns.push(displayColumn.id)
+      }
+    }
+    console.log(this.displayColumns);
+    console.log(this.displayedColumns);
   }
 }
