@@ -18,13 +18,36 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSelectModule} from "@angular/material/select";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {WorkItemTypes, WorkItemTypesValue} from "../../common/model/workitemtypes";
+import {MatOptionSelectionChange} from "@angular/material/core";
+import {Process, ProcessValue} from "../../common/model/process";
 
 
 export interface FieldViewModel {
+  isVisible: boolean;
   isSelected: boolean;
   name: string;
   referenceName: string;
   description: string;
+}
+
+interface ProcessField {
+  ReferenceId: string;
+  LabelText: string;
+}
+
+interface ProcessInfo {
+  name: string;
+  fields: ProcessField[]
+}
+
+interface DisplayColumn {
+  id: string,
+  label: string,
+  isVisible: boolean
+}
+
+interface DynamicObject {
+  [prop: string]: any;
 }
 
 @Component({
@@ -55,20 +78,27 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
   public displayedColumns: string[] = [
     "id",
     "rev",
-    "fields",
   ];
-  public values: WorkItem[] = [];
 
+  // Raw MetaData
   public fields: FieldValue[] = [];
-
-  public workItemTypesFormControl = new FormControl('');
-  toppings = new FormControl('');
+  
   public selectedFields: FieldViewModel[] = [];
 
-  public dataSource = new MatTableDataSource<WorkItem>(this.values);
+  public processInfos: ProcessInfo[] = [];
+
+  public displayColumns: DisplayColumn[] = [];
+
+  public values: DynamicObject[] = [];
+
+  public processesFormControl = new FormControl('');
+
+  public dataSource = new MatTableDataSource<DynamicObject>(this.values);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  public  workItemTypesValues: WorkItemTypesValue[] = [];
+
+
+  private selectedProcessInfos: Map<string, ProcessInfo> = new Map<string, ProcessInfo>()
 
   constructor(private readonly dataStoreService: DataStoreService, private readonly metaDataService: MetaDataService) {
 
@@ -81,23 +111,55 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
   }
 
   ngAfterViewInit() {
-    console.log("AfterViewInit")
-    // this.dataSource.paginator = this.paginator;
+    
   }
 
 
   ngOnInit(): void {
-    console.log("ngOnInit");
-    this.metaDataService.getMetaDataWorkItemTypes().subscribe((workItemTypes: WorkItemTypes) => {
-      this.workItemTypesValues = workItemTypes.value;
+    this.metaDataService.getMetaDataProcessesLayout().subscribe((processRoot: Process) => {
+      for(let process of processRoot.value){
+        let processInfo: ProcessInfo = {
+          name: process.name,
+          fields: []
+        }
+
+        // システムのフィールド
+        for(let systemControl of process.layout.systemControls){
+          let referenceId = systemControl.id;
+          let label = systemControl.label;
+          if(referenceId === undefined || label === undefined || referenceId.length === 0 || label.length === 0){
+            continue;
+          }
+          processInfo.fields.push({
+            ReferenceId: referenceId,
+            LabelText: label
+          })
+        }
+        // レイアウトのフィールド
+        for(let page of process.layout.pages){
+          for(let section of page.sections){
+            for(let group of section.groups){
+              for(let control of group.controls){
+                let referenceId = control.id;
+                let label = control.label;
+                processInfo.fields.push({
+                  ReferenceId: referenceId,
+                  LabelText: label
+                })
+              }
+            }
+          }
+        }
+        this.processInfos.push(processInfo);
+      }
     })
 
 
     this.metaDataService.getMetaDataFields().subscribe((field: Field) => {
       this.fields = field.value;
-
       for(let f of this.fields){
         this.selectedFields.push({
+          isVisible: false,
           isSelected: false,
           name: f.name,
           referenceName: f.referenceName,
@@ -107,8 +169,18 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
     })
 
     this.dataStoreService.getWorkItems().subscribe((workItems: WorkItem[]) => {
-      this.values = workItems;
-      this.dataSource = new MatTableDataSource<WorkItem>(this.values);
+
+      // workItemsをループで回して、フィールを動的に列挙してthis.valuesにフィールドを追加して、配列の追加する。
+      for(let workItem of workItems){
+        let dynamicObject: DynamicObject = {};
+        dynamicObject["id"] = workItem.id;
+        dynamicObject["rev"] = workItem.rev;
+        for(let field in workItem.fields){
+          dynamicObject[field] = workItem.fields[field].toString();
+        };
+        this.values.push(dynamicObject);
+      }
+      this.dataSource = new MatTableDataSource<DynamicObject>(this.values);
       this.dataSource.paginator = this.paginator;
       this.isLoading = false;
     });
@@ -120,4 +192,49 @@ export class WorkItemsComponent implements AfterViewInit, OnInit {
   }
 
 
+  onSelectionChangeProcesses($event: MatOptionSelectionChange<string>) {
+
+    this.displayColumns = [];
+    this.displayedColumns = [
+      "id",
+      "rev",
+    ];
+
+    for(let processInfo of this.processInfos){
+      if (processInfo.name === $event.source.value){
+        if ($event.source.selected){
+          this.selectedProcessInfos.set(processInfo.name, processInfo);
+        }else{
+          this.selectedProcessInfos.delete(processInfo.name);
+        }
+      }
+    }
+
+    for(let dicplayedColumn of this.displayedColumns){
+      this.displayColumns.push({
+        id: dicplayedColumn,
+        label: dicplayedColumn,
+        isVisible: true
+      })
+    }
+
+    // 選択されたチケットの種類のフィールド
+    for(let [key, value] of this.selectedProcessInfos){
+      for(let processField of value.fields){
+        let findFields = this.displayColumns.filter((x) => x.id === processField.ReferenceId);
+        if(findFields.length > 0){
+          continue;
+        }
+        if (processField.ReferenceId === undefined || processField.LabelText === undefined || processField.ReferenceId.length === 0 || processField.LabelText.length === 0){
+          continue;
+        }
+        this.displayColumns.push({
+          id: processField.ReferenceId,
+          label: processField.LabelText,
+          isVisible: false
+        })
+        this.displayedColumns.push(processField.ReferenceId)
+      }
+    }
+  }
 }

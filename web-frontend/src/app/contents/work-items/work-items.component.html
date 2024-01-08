@@ -9,15 +9,15 @@
     </mat-expansion-panel-header>
     <mat-form-field>
       <mat-label>WorkItemTypes</mat-label>
-      <mat-select [formControl]="workItemTypesFormControl" multiple>
-        @for (workItemTypesValue of workItemTypesValues; track workItemTypesValue) {
-          <mat-option [value]="workItemTypesValue.referenceName">{{workItemTypesValue.name}}</mat-option>
+      <mat-select [formControl]="processesFormControl" multiple>
+        @for (processInfo of processInfos; track processInfo) {
+          <mat-option (onSelectionChange)="onSelectionChangeProcesses($event)" [value]="processInfo.name">{{processInfo.name}}</mat-option>
         }
       </mat-select>
     </mat-form-field>
     <mat-selection-list #shoes>
-      @for (selectedField of selectedFields; track selectedField) {
-        <mat-list-option>{{selectedField.name}}</mat-list-option>
+      @for (displayColumn of displayColumns; track displayColumn ) {
+        <mat-list-option>{{displayColumn.label}} [{{displayColumn.id}}]</mat-list-option>
       }
     </mat-selection-list>
   </mat-expansion-panel>
@@ -39,28 +39,18 @@
 
 <div class="mat-elevation-z8">
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-
-    <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef> id </th>
-      <td mat-cell *matCellDef="let element"> {{element.id}} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="rev">
-      <th mat-header-cell *matHeaderCellDef> rev </th>
-      <td mat-cell *matCellDef="let element"> {{element.rev}} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="fields">
-      <th mat-header-cell *matHeaderCellDef> fields </th>
-      <td mat-cell *matCellDef="let element"> {{element.fields['System.Title']}} </td>
-    </ng-container>
-
-
+    @for (column of displayedColumns; track column) {
+      <ng-container [matColumnDef]="column">
+        <th mat-header-cell *matHeaderCellDef> {{column}} </th>
+        <td mat-cell *matCellDef="let element"> {{element[column]}} </td>
+      </ng-container>
+    }
+  
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
   </table>
-  <mat-paginator [pageSizeOptions]="[5, 10, 20, 50, 100]"
+
+  <mat-paginator [pageSizeOptions]="[20, 50, 100, 500, 1000]"
                  showFirstLastButtons
                  aria-label="Select page of periodic elements">
   </mat-paginator>

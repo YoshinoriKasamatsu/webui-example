@@ -5,9 +5,9 @@ import {baseUrl} from '../const/path';
 import {Category} from "../model/category";
 import {Field} from "../model/field";
 import {Classification} from "../model/classification";
-import { State } from "../model/state";
+import {State} from "../model/state";
 import {WorkItemTypes} from "../model/workitemtypes";
-
+import {Process} from "../model/process";
 
 
 @Injectable({
@@ -37,12 +37,9 @@ export class MetaDataService {
   }
 
   getMetaDataWorkItemTypes(): Observable<WorkItemTypes> {
-    console.log('getMetaDataWorkItemTypes');
     // WebAPIの呼び出し
     return this.httpClient.get<WorkItemTypes>(baseUrl + 'api/workitemtypes').pipe(
       map((value) => {
-        console.log('getMetaDataWorkItemTypes');
-        console.log(value);
         return value;
       }));
   }
@@ -59,10 +56,20 @@ export class MetaDataService {
     // WebAPIの呼び出し
     return this.httpClient.get<State>(baseUrl + 'api/states').pipe(
       map((state) => {
-        console.log(state);
         return state;
       }));
   }
+
+  getMetaDataProcessesLayout(): Observable<Process> {
+    // WebAPIの呼び出し
+    return this.httpClient.get<Process>(baseUrl + 'api/processes/layout').pipe(
+      map((process) => {
+        return process;
+      }));
+  }
+
+
+
 
 
 }

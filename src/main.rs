@@ -1,8 +1,9 @@
 use actix_files::Files;
-use actix_web::{middleware::Logger, App, HttpServer, web, HttpResponse, http::header::ContentType,};
+use actix_web::{App, http::header::ContentType, HttpResponse, HttpServer, middleware::Logger, web, };
 use azure_devops_rust_lib::models::config::Config;
 use serde::{Deserialize, Serialize};
 use tokio::fs;
+use api::meta_data;
 use chrono::{DateTime, Duration, Utc};
 
 extern crate azure_devops_rust_lib;
@@ -11,6 +12,7 @@ extern crate azure_devops_rust_lib;
 mod data_store;
 mod repositories;
 mod data_operation;
+mod api;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AppConfig {
@@ -28,51 +30,6 @@ async fn get_work_items() -> HttpResponse {
 
     let response = repositories::get_work_items().await;
     let json_text = serde_json::to_string(&response).unwrap();
-    HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(json_text)
-}
-
-async fn get_categories() -> HttpResponse {
-
-    let categories = repositories::get_categories().await;
-    let json_text = serde_json::to_string(&categories).unwrap();
-    HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(json_text)
-}
-
-async fn get_fields() -> HttpResponse {
-
-    let values = repositories::get_fields().await;
-    let json_text = serde_json::to_string(&values).unwrap();
-    HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(json_text)
-}
-
-async fn get_work_item_types() -> HttpResponse {
-
-    let values = repositories::get_work_item_types().await;
-    let json_text = serde_json::to_string(&values).unwrap();
-    HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(json_text)
-}
-
-async fn get_classification() -> HttpResponse {
-
-    let values = repositories::get_classification().await;
-    let json_text = serde_json::to_string(&values).unwrap();
-    HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(json_text)
-}
-
-async fn get_states() -> HttpResponse {
-
-    let values = repositories::get_states().await;
-    let json_text = serde_json::to_string(&values).unwrap();
     HttpResponse::Ok()
         .content_type(ContentType::json())
         .body(json_text)
@@ -118,12 +75,13 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             // .service(Files::new("/images", "static/images/").show_files_listing())
+            .route("api/processes/layout", web::get().to(meta_data::get_processes_layout))
             .route("api/workitems", web::get().to(get_work_items))
-            .route("api/categories", web::get().to(get_categories))
-            .route("api/fields", web::get().to(get_fields))
-            .route("api/workitemtypes", web::get().to(get_work_item_types))
-            .route("api/classification", web::get().to(get_classification))
-            .route("api/states", web::get().to(get_states))
+            .route("api/categories", web::get().to(meta_data::get_categories))
+            .route("api/fields", web::get().to(meta_data::get_fields))
+            .route("api/workitemtypes", web::get().to(meta_data::get_work_item_types))
+            .route("api/classification", web::get().to(meta_data::get_classification))
+            .route("api/states", web::get().to(meta_data::get_states))
             .route("api/data-operation/load-data", web::post().to(post_operation_load_data))
             .service(Files::new("/", "./dist/web-frontend/browser").index_file("index.html"))
             .wrap(Logger::default())
